@@ -48,13 +48,19 @@ void* pcm_main(void* data)
     while (1) {
         pa_get_devicelist(pa_output_devicelist);
         stateplay = pa_output_devicelist[ctr].state;
-        if (stateplay == 1 && stateplayold == 0)
+        if (stateplay == 1)
         {
-            /* Sleep for 500ms and then attempt to render again */
-            struct timespec tv = {
-                .tv_sec = 0, .tv_nsec = 500 * 1000000
-            };
-            nanosleep(&tv, NULL);
+            if (stateplayold == 0)
+            {
+                /* Sleep for 500ms and then attempt to render again */
+                struct timespec tv = {
+                    .tv_sec = 0, .tv_nsec = 500 * 1000000
+                };
+                nanosleep(&tv, NULL);
+                stateplayold = 1;
+            }
+        } else {
+            stateplayold = 0;
         }
         pcm -> stateplay = stateplay;
     }
@@ -147,7 +153,7 @@ int pa_get_devicelist(pa_devicelist_t *output) {
 
 // This callback gets called when our context changes state.  We really only
 // care about when it's ready or if it has failed
-void pa_state_cb(pa_context *c, void *userdata) {
+void pa_state_cb(pa_context * c, void *userdata) {
     pa_context_state_t state;
     int *pa_ready = userdata;
 
@@ -173,7 +179,7 @@ void pa_state_cb(pa_context *c, void *userdata) {
 // pa_mainloop will call this function when it's ready to tell us about a sink.
 // Since we're not threading, there's no need for mutexes on the devicelist
 // structure
-void pa_sinklist_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata) {
+void pa_sinklist_cb(pa_context * c, const pa_sink_info * l, int eol, void *userdata) {
     pa_devicelist_t *pa_devicelist = userdata;
     int ctr = 0;
 
