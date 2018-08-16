@@ -258,8 +258,8 @@ int main(int argc, char** argv) {
         printf("Using default PulseAudio sink: %s\n", audio.source);
     }
     
-    pthread_t thread;
-    pthread_create(&thread, NULL, input_pulse, (void*) &audio);
+    // pthread_t thread;
+    // pthread_create(&thread, NULL, input_pulse, (void*) &audio);
     
     float lb[r->bufsize_request], rb[r->bufsize_request];
     struct timeval t1;
@@ -272,19 +272,19 @@ int main(int argc, char** argv) {
         bool modified; /* if the audio buffer has been updated by the streaming thread */
 
         /* lock the audio mutex and read our data */
-        pthread_mutex_lock(&audio.mutex);
-        modified = audio.modified;
-        if (modified) {
-            /* create our own copies of the audio buffers, so the streaming
-               thread can continue to append to it */
-            memcpy(lb, (void*) audio.audio_out_l, r->bufsize_request * sizeof(float));
-            memcpy(rb, (void*) audio.audio_out_r, r->bufsize_request * sizeof(float));
-            audio.modified = false; /* set this flag to false until the next time we read */
-        }
-        pthread_mutex_unlock(&audio.mutex);
+        // pthread_mutex_lock(&audio.mutex);
+        // modified = audio.modified;
+        // if (modified) {
+        //     /* create our own copies of the audio buffers, so the streaming
+        //        thread can continue to append to it */
+        //     memcpy(lb, (void*) audio.audio_out_l, r->bufsize_request * sizeof(float));
+        //     memcpy(rb, (void*) audio.audio_out_r, r->bufsize_request * sizeof(float));
+        //     audio.modified = false; /* set this flag to false until the next time we read */
+        // }
+        // pthread_mutex_unlock(&audio.mutex);
         gettimeofday(&t2, 0);
         
-        if (!rd_update(r, lb, rb, r->bufsize_request, ((float)(((t2.tv_sec - t1.tv_sec) * 1000.0)+(t2.tv_usec - t1.tv_usec) / 1000.0)/1000.0), modified)) {
+        if (!rd_update(r, lb, rb, r->bufsize_request, ((float)(((t2.tv_sec - t1.tv_sec) * 1000.0)+(t2.tv_usec - t1.tv_usec) / 1000.0)/1000.0), false)) {
             /* Sleep for 50ms and then attempt to render again */
             struct timespec tv = {
                 .tv_sec = 0, .tv_nsec = 50 * 1000000

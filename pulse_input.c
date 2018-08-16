@@ -161,27 +161,29 @@ void* input_pulse(void* data) {
         memmove(br, &br[ssz / 4], (fsz - (ssz / 4)) * sizeof(float)); 
 
         /* sorting out channels */
-        
-        for (n = 0, i = 0; i < ssz / 2; i += 2) {
-
-            /* size_t idx = (i / 2) + (at * (BUFSIZE / 2)); */
-
-            int idx = (fsz - (ssz / 4)) + n;
-
-            if (audio->channels == 1) {
-                float sample = (buf[i] + buf[i + 1]) / 2;
-                bl[idx] = sample;
-                br[idx] = sample;
-            }
-
-            /* stereo storing channels in buffer */
-            if (audio->channels == 2) {
-                bl[idx] = buf[i];
-                br[idx] = buf[i + 1];
-            }
-            ++n;
-        }
-        audio->modified = true;
+        // if (buf[3] != 0 || buf[4] != 0) // random slots
+        // {
+            for (n = 0, i = 0; i < ssz / 2; i += 2) {
+    
+                    /* size_t idx = (i / 2) + (at * (BUFSIZE / 2)); */
+    
+                    int idx = (fsz - (ssz / 4)) + n;
+    
+                    if (audio->channels == 1) {
+                        float sample = (buf[i] + buf[i + 1]) / 2;
+                        bl[idx] = sample;
+                        br[idx] = sample;
+                    }
+    
+                    /* stereo storing channels in buffer */
+                    if (audio->channels == 2) {
+                        bl[idx] = buf[i];
+                        br[idx] = buf[i + 1];
+                    }
+                    ++n;
+                }
+            audio->modified = true;
+        // }
         
         pthread_mutex_unlock(&audio->mutex);
         
