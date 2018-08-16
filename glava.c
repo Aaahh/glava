@@ -11,6 +11,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <sys/time.h> 
 #include <sys/types.h>
 
 #include "fifo.h"
@@ -261,6 +262,9 @@ int main(int argc, char** argv) {
     pthread_create(&thread, NULL, input_pulse, (void*) &audio);
     
     float lb[r->bufsize_request], rb[r->bufsize_request];
+    struct timeval t1;
+    struct timeval t2;
+    gettimeofday(&t1, 0);
     while (r->alive) {
 
         rd_time(r); /* update timer for this frame */
@@ -278,8 +282,9 @@ int main(int argc, char** argv) {
             audio.modified = false; /* set this flag to false until the next time we read */
         }
         pthread_mutex_unlock(&audio.mutex);
+        gettimeofday(&t2, 0);
         
-        if (!rd_update(r, lb, rb, r->bufsize_request, modified)) {
+        if (!rd_update(r, lb, rb, r->bufsize_request, ((float)(((t2.tv_sec - t1.tv_sec) * 1000.0)+(t2.tv_usec - t1.tv_usec) / 1000.0)/1000.0), modified)) {
             /* Sleep for 50ms and then attempt to render again */
             struct timespec tv = {
                 .tv_sec = 0, .tv_nsec = 50 * 1000000

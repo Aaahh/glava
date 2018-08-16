@@ -460,7 +460,9 @@ static struct gl_bind_src bind_sources[] = {
     #define SRC_AUDIO_SZ 3
     { .name = "audio_sz", .type = BIND_INT, .src_type = SRC_AUDIO_SZ },
     #define SRC_SCREEN 4
-    { .name = "screen", .type = BIND_IVEC2, .src_type = SRC_SCREEN }
+    { .name = "screen", .type = BIND_IVEC2, .src_type = SRC_SCREEN },
+    #define SRC_TIME 5
+    { .name = "iTime", .type = BIND_FLOAT, .src_type = SRC_TIME }
 };
 
 #define window(t, sz) (0.53836 - (0.46164 * cos(TWOPI * (double) t  / (double)(sz - 1))))
@@ -1281,7 +1283,7 @@ void rd_time(struct renderer* r) {
     gl->wcb->set_time(gl->w, 0.0D); /* reset time for measuring this frame */
 }
 
-bool rd_update(struct renderer* r, float* lb, float* rb, size_t bsz, bool modified) {
+bool rd_update(struct renderer* r, float* lb, float* rb, size_t bsz, float itv, bool modified) {
     struct gl_data* gl = r->gl;
     size_t t, a, fbsz = bsz * sizeof(float);
     
@@ -1568,7 +1570,8 @@ bool rd_update(struct renderer* r, float* lb, float* rb, size_t bsz, bool modifi
             case SRC_AUDIO_L:  handle_1d_tex(gl->audio_tex_l, lb, ilb, bsz, 1, true); break;
             case SRC_AUDIO_R:  handle_1d_tex(gl->audio_tex_r, rb, irb, bsz, 2, true); break;
             case SRC_AUDIO_SZ: glUniform1i(bind->uniform, bsz);                       break;
-            case SRC_SCREEN:   glUniform2i(bind->uniform, (GLint) ww, (GLint) wh);    break;
+            case SRC_TIME:     glUniform1f(bind->uniform, itv);                       break;
+            case SRC_SCREEN:   glUniform2f(bind->uniform, (GLint) ww, (GLint) wh);    break;
             }
         }
         
